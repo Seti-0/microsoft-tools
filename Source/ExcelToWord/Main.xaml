@@ -1,0 +1,115 @@
+﻿<Window x:Class="ExcelToWord.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExcelToWord"
+        mc:Ignorable="d"
+        
+        Title="Excel To Word" Height="500" Width="900" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen"
+        >
+    
+    <Window.Resources>
+        <!-- Paragraph style for console, so that there are no gaps appended text -->
+        <Style TargetType="{x:Type Paragraph}">
+            <Setter Property="Margin"
+                    Value="0" />
+        </Style>
+        <!-- Editable cells for GridViews -->
+        <DataTemplate x:Key="Editing">
+            <TextBox Foreground="Red" Text="{Binding Alias}" LostFocus="TextBox_LostFocus"/>
+        </DataTemplate>
+        <DataTemplate x:Key="Default">
+            <TextBlock Foreground="Red" Text="{Binding Alias}" MouseDown="TextBlock_MouseDown"/>
+        </DataTemplate>
+        <Style x:Key="EditableCell" TargetType="ContentPresenter">
+            <Setter Property="ContentTemplate" Value="{StaticResource Default}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Editing}" Value="True">
+                    <Setter Property="ContentTemplate" Value="{StaticResource Editing}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <!-- Align grid view headers -->
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <DockPanel MinWidth="300">
+            <!-- Text boxes with "Select" buttons (at top) -->
+            <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
+                <DockPanel>
+                    <Button Content="Browse" x:Name="SelectFile" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFile_Click"/>
+                    <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" Width="180" MaxLines="1"/>
+                </DockPanel>
+                <DockPanel>
+                    <Button Content="Select Names" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1"/>
+                    <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="146.606666666667"/>
+                </DockPanel>
+                <DockPanel LastChildFill="True" Margin="10,5,10,5">
+                    <Label Content="Save As: "/>
+                    <ComboBox Name="SaveAsType" Padding="6,4,6,5" SelectedIndex="0">
+                        <ComboBoxItem Content="PDF"/>
+                        <ComboBoxItem Content="Word Document"/>
+                    </ComboBox>
+                </DockPanel>
+            </StackPanel>
+            <!-- "Run" and "Cancel" buttons (along bottom) -->
+            <DockPanel LastChildFill="False" DockPanel.Dock="Bottom">
+                <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click">
+                    <Button.Background>
+                        <ImageBrush/>
+                    </Button.Background>
+                </Button>
+                <Button x:Name="Cancel" Content="Cancel" Width="100" Margin="5,5,5,10" Padding="10,10,10,10" Click="Cancel_Click"/>
+            </DockPanel>
+            <!-- Center list of sources -->
+            <DockPanel LastChildFill="True" Margin="10,5,10,5" Width="280.126666666667">
+                <!-- List controls -->
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Width="Auto" Height="Auto" HorizontalAlignment="Stretch">
+                    <Button Content="Add" x:Name="AddSource" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="AddSource_Click" />
+                    <Button Content="Remove" x:Name="RemoveSource" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" Click="RemoveSource_Click" />
+                    <Button Content="Move Up" x:Name="MoveSourceUp" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" Click="MoveSourceUp_Click" />
+                    <Button Content="Move Down" x:Name="MoveSourceDown" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="MoveSourceDown_Click" />
+                </StackPanel>
+                <!-- The actual list object -->
+                <ListView x:Name="ExcelSources" SelectionMode="Single">
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="Alias ">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <ContentPresenter Style="{StaticResource EditableCell}" Content="{Binding}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Name ">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Foreground="Black" Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Path ">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Foreground="Gray" Text="{Binding Path}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </DockPanel>
+        </DockPanel>
+        <RichTextBox x:Name="LogBox" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" MinWidth="0" IsReadOnly="True" Background="Black" VerticalScrollBarVisibility="Auto">
+            <FlowDocument>
+                <Paragraph/>
+            </FlowDocument>
+        </RichTextBox>
+    </DockPanel>
+</Window>
