@@ -20,7 +20,8 @@
             <TextBox Foreground="Red" Text="{Binding Alias}" LostFocus="TextBox_LostFocus"/>
         </DataTemplate>
         <DataTemplate x:Key="Default">
-            <TextBlock Foreground="Red" Text="{Binding Alias}" MouseDown="TextBlock_MouseDown"/>
+            <TextBlock Foreground="Red" Text="{Binding Alias}" MouseDown="TextBlock_MouseDown" 
+            FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
         </DataTemplate>
         <Style x:Key="EditableCell" TargetType="ContentPresenter">
             <Setter Property="ContentTemplate" Value="{StaticResource Default}"/>
