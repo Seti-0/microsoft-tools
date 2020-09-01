@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Interop.Word;
@@ -10,6 +11,8 @@ namespace Red.Core.IO
 {
     public class FileHelper
     {
+        private static List<string> _temporaryPaths = new List<string>();
+
         public static bool TryOpenWorkbook(OfficeApps apps, string filePath, 
             bool readOnly, out Workbook result)
         {
@@ -58,34 +61,37 @@ namespace Red.Core.IO
             return found;
         }
 
-        public static Dictionary<string, Workbook> OpenWorkbooks(OfficeApps apps, 
-            IList<string> filePaths, bool readOnly)
+        public static void SaveTemporarily(Document document)
         {
-            var results = new Dictionary<string, Workbook>();
-            foreach (var path in filePaths)
-            {
-                if (Flow.Interrupted)
-                    break;
+            string path = PathHelper.GetUniqueFileName("temporary file.docx");
+            path = Path.GetFullPath(path);
+            _temporaryPaths.Add(path);
 
-                if (TryOpenWorkbook(apps, path, readOnly, out Workbook book))
-                    results.Add(book.Name, book);
-            }
-            return results;
+            document.SaveAs2(path);
+            Log.Core.Debug($"Creating temporary file: {path}");
         }
 
-        public static Dictionary<string, Document> OpenDocuments(OfficeApps apps,
-            IList<string> filePaths, bool readOnly)
+        public static void DeleteTemporaryFiles()
         {
-            var results = new Dictionary<string, Document>();
-            foreach (var path in filePaths)
-            {
-                if (Flow.Interrupted)
-                    break;
+            if (_temporaryPaths.Count == 0)
+                return;
 
-                if (TryOpenDocument(apps, path, readOnly, out Document doc))
-                    results.Add(doc.Name, doc);
+            Log.Core.Debug("Deleting temporary files");
+
+            foreach (string path in _temporaryPaths)
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception e)
+                {
+                    Log.Core.Warning("Failed to delete temporary file");
+                    Log.Core.Debug("This means it may have to be deleted manually", e);
+                }
             }
-            return results;
+
+            _temporaryPaths.Clear();
         }
     }
 }

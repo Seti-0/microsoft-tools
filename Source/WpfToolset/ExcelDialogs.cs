@@ -11,6 +11,7 @@ using Red.Core.IO;
 namespace WpfToolset
 {
     using Workbook = Microsoft.Office.Interop.Excel.Workbook;
+    using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
     public static class ExcelDialogs
     {
@@ -42,15 +43,16 @@ namespace WpfToolset
         private static void UpdateSharedWorksheets(OfficeApps apps, IEnumerable<string> paths)
         {
             var workbooks = OpenWorkbooks(apps, paths).ToList();
-            if (workbooks.Count < 2)
-                return;
+
+            if (workbooks.Count == 0)
+                sharedWorksheets = null;
+
+            sharedWorksheets = new List<SharedWorksheet>();
 
             ExcelHelper.FindCommonWorksheetNames(out var commonNames, out var outliers, workbooks);
 
             if (Flow.Interrupted)
                 return;
-
-            sharedWorksheets = new List<SharedWorksheet>();
 
             foreach (var common in commonNames)
             {
@@ -181,13 +183,16 @@ namespace WpfToolset
                     list.Add(new SelectWorksheetDialog.Item { Content = name, Primary = item.IsCommon });
                 }
 
+                worksheetDialog.Items = list;
+                worksheetDialog.SelectAll();
+
                 bool? success = worksheetDialog.ShowDialog();
 
                 if (success.HasValue && success.Value && worksheetDialog.Results != null)
                 {
+                    string result = string.Join(',', worksheetDialog.Results);
 
-
-                    textBox.Text = worksheetDialog.Result;
+                    textBox.Text = result;
                     textBox.ScrollToEnd();
                     return true;
                 }

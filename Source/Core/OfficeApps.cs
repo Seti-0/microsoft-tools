@@ -8,6 +8,7 @@ using Microsoft.Office.Interop.Excel;
 
 using Red.Core.Logs;
 using System.Diagnostics;
+using Red.Core.IO;
 
 namespace Red.Core
 {
@@ -174,6 +175,8 @@ namespace Red.Core
 
                 excel = null;
             }
+
+            FileHelper.DeleteTemporaryFiles();
         }
 
         [DllImport("user32.dll")]
@@ -182,7 +185,7 @@ namespace Red.Core
         private void KillExcel()
         {
             /* 
-             * This is a last resort. Aside from being just not nice, there
+             * This is a last resort. Aside from just not being nice, there
              * are obscure situations in which nasty side effects can occur, apparently. (Something
              * about shared excel processess, I didn't understand it)
              */

@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Red.Core;
 using Red.Core.IO;
+using Red.Core.Logs;
 using Red.Core.Office;
 using WpfToolset;
 
@@ -37,7 +38,7 @@ namespace ExcelToWord
 
         private void SelectFile_Click(object sender, RoutedEventArgs e)
         {
-            IODialogs.TrySelectFile(DocumentPath, "Select Workbook", "xlsx");
+            IODialogs.TrySelectFile(DocumentPath, SelectFile,"Select document", "docx");
         }
 
         private void Run_Click(object sender, RoutedEventArgs e)
@@ -55,17 +56,50 @@ namespace ExcelToWord
         {
             if (IODialogs.TrySelectFile(out string path, "Select Excel Source", ".xlsx"))
             {
-                string bookName = Path.GetFileNameWithoutExtension(path);
-
-                userInput.AddSource(new UserInputSource()
+                void UpdateSources()
                 {
-                    Alias = userInput.ExcelSources.Count.ToString(),
-                    Name = bookName,
-                    Path = path
-                });
-                ExcelSources.Items.Refresh();
+                    string bookName = Path.GetFileNameWithoutExtension(path);
 
-                ExcelDialogs.CheckCommonWorksheets(userInput.ExcelSources.Select(x => x.Path));
+                    userInput.AddSource(new UserInputSource()
+                    {
+                        Alias = userInput.ExcelSources.Count.ToString(),
+                        Name = bookName,
+                        Path = path
+                    });
+                    ExcelSources.Items.Refresh();
+                }
+
+                void Update()
+                {
+                    ExcelSources.Dispatcher.Invoke(UpdateSources);
+                }
+
+                void PostUpdate()
+                {
+                    ExcelDialogs.CheckCommonWorksheets(userInput.ExcelSources.Select(x => x.Path));
+                }
+
+                /* This is ultimately too slow to be practical
+                 * 
+                void UpdateOnCheck()
+                {
+                    bool passed = IODialogs.ExcelCheck.Predicate(path);
+
+                    if (passed)
+                    {
+                        ExcelSources.Dispatcher.Invoke(Update);
+                        Script.Log.Debug("Document check passed");
+                    }
+                    else
+                    {
+                        Script.Log.Warning("Document check failed");
+                        Script.Log.Aside("Is the document you provided accessible, and a word document?");
+                    }
+                }
+                */
+
+                WindowHelper.RunWithCancel("Check source", Update, 
+                    "Cancelled checking excel source", PostUpdate);
             }
         }
 
@@ -101,11 +135,13 @@ namespace ExcelToWord
         private void CollectInput()
         {
             userInput.WordFilePath = DocumentPath.Text;
+            userInput.ExcelSheetNames = SheetNames.Text;
+            userInput.OutputFormat = (SaveAsType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "PDF";
         }
 
         private void RunGuardedScript()
         {
-            OfficeApps.RunExcelWithGuard(RunScript);
+            OfficeApps.RunOfficeWithGuard(RunScript);
         }
 
         private void RunScript(OfficeApps apps)
@@ -134,6 +170,11 @@ namespace ExcelToWord
             var userInput = control.DataContext as UserInputSource;
 
             userInput.Editing = false;
+        }
+
+        private void SelectSheets_Click(object sender, RoutedEventArgs e)
+        {
+            ExcelDialogs.SelectSharedWorksheets(SheetNames);
         }
     }
 }

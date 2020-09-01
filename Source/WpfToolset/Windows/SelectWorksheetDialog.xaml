@@ -10,8 +10,12 @@
     <Window.InputBindings>
         <KeyBinding Key="A"
                     Modifiers="Ctrl"
-                    Command="{Binding SelectAllGlobal}"/>
+                    Command="{x:Static ApplicationCommands.SelectAll}"/>
     </Window.InputBindings>
+    <Window.Resources>
+        <CommandBinding x:Key="SelectAll" Command="{x:Static ApplicationCommands.SelectAll}"
+                            CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed"/>
+    </Window.Resources>
     <DockPanel>
         <DockPanel LastChildFill="False" DockPanel.Dock="Bottom">
             <DockPanel LastChildFill="False" DockPanel.Dock="Right">
@@ -38,6 +42,11 @@
                     </Style.Triggers>
                 </Style>
             </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Content}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
         </ListBox>
     </DockPanel>
 </Window>

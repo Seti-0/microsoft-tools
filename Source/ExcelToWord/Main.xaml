@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ExcelToWord"
         mc:Ignorable="d"
         
-        Title="Excel To Word" Height="500" Width="900" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen"
+        Title="Excel To Word" Height="500" Width="1200" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen"
         >
     
     <Window.Resources>
@@ -37,18 +37,29 @@
         </Style>
     </Window.Resources>
 
+    <Window.InputBindings>
+        <KeyBinding Key="a"
+                    Modifiers="Ctrl"
+                    Command="{x:Static ApplicationCommands.SelectAll}"/>
+    </Window.InputBindings>
+
     <DockPanel>
         <DockPanel MinWidth="300">
-            <!-- Text boxes with "Select" buttons (at top) -->
+            <!-- Select word template (at top) -->
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
                 <DockPanel>
                     <Button Content="Browse" x:Name="SelectFile" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFile_Click"/>
-                    <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" Width="180" MaxLines="1"/>
+                    <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="229.873333333333"/>
                 </DockPanel>
+            </StackPanel>
+            <!-- Other fields (along bottom) -->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical">
+                <!-- Select sheet names -->
                 <DockPanel>
-                    <Button Content="Select Names" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1"/>
-                    <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="146.606666666667"/>
+                    <Button Content="Select Names" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectSheets_Click"/>
+                    <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="196.48"/>
                 </DockPanel>
+                <!-- Select Save As -->
                 <DockPanel LastChildFill="True" Margin="10,5,10,5">
                     <Label Content="Save As: "/>
                     <ComboBox Name="SaveAsType" Padding="6,4,6,5" SelectedIndex="0">
@@ -56,25 +67,25 @@
                         <ComboBoxItem Content="Word Document"/>
                     </ComboBox>
                 </DockPanel>
+                <!-- "Run" and "Cancel" buttons -->
+                <DockPanel LastChildFill="False">
+                    <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click">
+                        <Button.Background>
+                            <ImageBrush/>
+                        </Button.Background>
+                    </Button>
+                    <Button x:Name="Cancel" Content="Cancel" Width="100" Margin="5,5,5,10" Padding="10,10,10,10" Click="Cancel_Click"/>
+                </DockPanel>
             </StackPanel>
-            <!-- "Run" and "Cancel" buttons (along bottom) -->
-            <DockPanel LastChildFill="False" DockPanel.Dock="Bottom">
-                <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click">
-                    <Button.Background>
-                        <ImageBrush/>
-                    </Button.Background>
-                </Button>
-                <Button x:Name="Cancel" Content="Cancel" Width="100" Margin="5,5,5,10" Padding="10,10,10,10" Click="Cancel_Click"/>
-            </DockPanel>
             <!-- Center list of sources -->
-            <DockPanel LastChildFill="True" Margin="10,5,10,5" Width="280.126666666667">
+            <DockPanel LastChildFill="True" Margin="10,5,10,5" Width="330">
                 <!-- List controls -->
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Width="Auto" Height="Auto" HorizontalAlignment="Stretch">
+                <UniformGrid DockPanel.Dock="Bottom" Rows="1">
                     <Button Content="Add" x:Name="AddSource" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="AddSource_Click" />
                     <Button Content="Remove" x:Name="RemoveSource" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" Click="RemoveSource_Click" />
                     <Button Content="Move Up" x:Name="MoveSourceUp" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" Click="MoveSourceUp_Click" />
                     <Button Content="Move Down" x:Name="MoveSourceDown" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="MoveSourceDown_Click" />
-                </StackPanel>
+                </UniformGrid>
                 <!-- The actual list object -->
                 <ListView x:Name="ExcelSources" SelectionMode="Single">
                     <ListView.View>

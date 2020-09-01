@@ -53,8 +53,6 @@ namespace WpfToolset
             public event PropertyChangedEventHandler PropertyChanged;
         }
 
-        public static readonly SelectAllCommand SelectAllGlobal = new SelectAllCommand();
-
         private static SelectWorksheetDialog lastDialog;
 
         public static SelectWorksheetDialog Current
@@ -65,21 +63,6 @@ namespace WpfToolset
                     return lastDialog;
 
                 else return null;
-            }
-        }
-
-        public class SelectAllCommand : ICommand
-        {
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object parameter)
-            {
-                return true;
-            }
-
-            public void Execute(object parameter)
-            {
-                Current?.SelectAll();
             }
         }
 
@@ -111,6 +94,8 @@ namespace WpfToolset
 
             if (workbookPath == null)
                 Refresh.IsEnabled = false;
+
+            SelectAll();
         }
 
         public void SelectAll()
@@ -183,6 +168,16 @@ namespace WpfToolset
             Refresh.Content = "Refresh";
             Refresh.Click -= Cancel_Click;
             Refresh.Click += Refresh_Click;
+        }
+
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            List.SelectAll();
         }
     }
 }

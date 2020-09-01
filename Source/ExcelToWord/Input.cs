@@ -12,9 +12,16 @@ using WpfToolset;
 using System.ComponentModel;
 using System.Net.Http.Headers;
 using System.Windows.Controls;
+using Red.Core.Logs;
+using Microsoft.Office.Interop.Word;
 
 namespace ExcelToWord
 {
+    public enum OutputFormat
+    {
+        PDF, Word
+    }
+
     public class Input
     {
         public class Source
@@ -23,17 +30,13 @@ namespace ExcelToWord
             public Workbook Workbook;
         }
 
-        public Workbook Workbook;
+        public Document Template;
 
-        public Worksheet Template;
+        public List<string> SheetNames;
 
-        public List<string> Formulae;
+        public List<Source> Sources;
 
-        public string SheetReference;
-
-        public Dictionary<string, Source> SourcesByAlias;
-
-        public Dictionary<string, Source> SourcesByName;
+        public OutputFormat OutputFormat;
     }
 
     public class UserInputSource : INotifyPropertyChanged
@@ -73,6 +76,8 @@ namespace ExcelToWord
         public string ExcelSheetNames;
 
         public List<UserInputSource> ExcelSources = new List<UserInputSource>();
+
+        public string OutputFormat { get; set; }
 
         private void InvokeSourcesChanged()
         {
@@ -152,74 +157,95 @@ namespace ExcelToWord
 
         public bool TryParse(OfficeApps apps, bool readOnly, out Input input)
         {
-            input = null;
-            return true;
-            /*
             input = new Input();
             
             if (Flow.Interrupted)
                 return false;
 
-            if (WordFilePath == null || TemplateName == null || Formulae == null || SheetReference == null)
+            if (WordFilePath == null || ExcelSheetNames == null || ExcelSources == null || OutputFormat == null)
             {
                 Script.Log.Error("Unable to parse user input - one or more fields were null");
                 return false;
             }
 
-            if (FileHelper.TryOpenWorkbook(apps, WordFilePath, readOnly, out Workbook result))
-                input.Workbook = result;
+            input.SheetNames = StringHelper
+                .Split(ExcelSheetNames)
+                .ToList();
 
-            // The FileHelper will have its own logs, no need to create new ones here
-            else return false;
-
-            if (ExcelHelper.TrySelectWorksheet(input.Workbook, out Worksheet worksheet, TemplateName, true))
+            if (input.SheetNames.Count == 0)
             {
-                input.Template = worksheet;
-            }
-            else
-            {
-                input.Template = null;
-                Script.Log.Warning($"Unable to find sheet {TemplateName} in {input.Workbook.FullName}");
+                Script.Log.Warning("Unable to read sheet names");
                 return false;
             }
 
             if (Flow.Interrupted)
                 return false;
 
-            input.Formulae = StringHelper
-                // "Split" here handles empty entries and such
-                .Split(Formulae)
-                .ToList();
+            if (FileHelper.TryOpenDocument(apps, WordFilePath, readOnly: true, out Document document))
+                input.Template = document;
 
-            if (input.Formulae.Count == 0)
+            else
             {
-                Script.Log.Warning("No formulae given");
+                //Script.Log.Warning("Note: the document must be available to write to");
+                //Script.Log.Debug("This means that it cannot be already open for editing in Word, for example");
+
+                // FileHelper will log the actual error
                 return false;
             }
 
-            var set = input.Formulae.ToHashSet();
-            if (set.Count < input.Formulae.Count)
-            {
-                input.Formulae = set.ToList();
-                Script.Log.Warning("Ignoring duplicate forumlae");
-            }
+            if (Flow.Interrupted)
+                return false;
 
-            input.SheetReference = SheetReference;
-
-            if (string.IsNullOrWhiteSpace(input.SheetReference))
+            if (ExcelSources.Count == 0)
             {
-                Script.Log.Warning($"No sheet range given");
+                Script.Log.Warning("At least one excel source is required");
                 return false;
             }
 
-            if (!ExcelHelper.TryParseWorksheetRange(out string _, input.Workbook, input.SheetReference, compareWords: true))
+            List<Input.Source> sources = new List<Input.Source>();
+
+            foreach (UserInputSource source in ExcelSources)
             {
-                Script.Log.Warning($"Invalid sheet reference: \"{input.SheetReference}\"");
+                if (Flow.Interrupted)
+                    return false;
+
+                if (FileHelper.TryOpenWorkbook(apps, source.Path, true, out Workbook workbook))
+                    sources.Add(new Input.Source { Alias = source.Alias, Workbook = workbook });
+
+                // FileHelper will log the error
+                else return false;
+            }
+
+            if (Flow.Interrupted)
                 return false;
+
+            if (new HashSet<string>(sources.Select(x => x.Alias)).Count < sources.Count)
+            {
+                Script.Log.Warning("Duplicate aliases detected");
+                return false;
+            }
+
+            input.Sources = sources;
+
+            if (Flow.Interrupted)
+                return false;
+
+            switch (OutputFormat.ToLower())
+            {
+                case "pdf":
+                    input.OutputFormat = ExcelToWord.OutputFormat.PDF;
+                    break;
+
+                case "word document":
+                    input.OutputFormat = ExcelToWord.OutputFormat.Word;
+                    break;
+
+                default:
+                    Script.Log.Error("Unrecognized output format: " + OutputFormat);
+                    break;
             }
 
             return true;
-            */
         }
     }
 }

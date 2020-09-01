@@ -38,7 +38,7 @@ namespace CreateNumericSummaries
 
         private void SelectFile_Click(object sender, RoutedEventArgs e)
         {
-            if (IODialogs.TrySelectFile(WorkbookPath, "Select Workbook", "xlsx"))
+            if (IODialogs.TrySelectFile(WorkbookPath, SelectFile, "Select Workbook", "xlsx"))
             {
                 CollectInput();
                 WindowHelper.RunWithCancel("Check worksheets", CheckWorksheets, cancelMessage: "Cancelled worksheet check");

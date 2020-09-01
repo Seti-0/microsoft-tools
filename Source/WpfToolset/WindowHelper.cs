@@ -38,18 +38,31 @@ namespace WpfToolset
                 Flow.Interrupt(Flow.Reason.Quit);
         }
 
-        public static async void RunWithCancel(string name, Action action, string cancelMessage)
+        public static void RunWithCancel(string name, Action action, string cancelMessage, Action after = null)
+        {
+            RunWithCancel(new BackgroundAction
+            {
+                Name = name,
+                Action = action,
+                CancelMessage = cancelMessage
+            }, after);
+        }
+
+        public static async void RunWithCancel(BackgroundAction action, Action after = null)
         {
             Run.IsEnabled = false;
             Cancel.IsEnabled = true;
 
-            await System.Threading.Tasks.Task.Run(() => Flow.RunWithCancel(name, action, cancelMessage));
+            await System.Threading.Tasks.Task.Run(() => Flow.RunWithCancel(
+                action.Name, action.Action, action.CancelMessage));
 
             if (Flow.Interrupted && Flow.InterruptReason == Flow.Reason.Quit)
                 AppHelper.Shutdown("Operation interruption complete. Reason: User Exit. Shutting down");
 
             Run.IsEnabled = true;
             Cancel.IsEnabled = false;
+
+            after?.Invoke();
         }
     }
 }

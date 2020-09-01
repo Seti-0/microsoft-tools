@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Navigation;
 using Microsoft.Office.Interop.Excel;
+using Microsoft.Office.Interop.Word;
 using Red.Core;
+using Red.Core.IO;
 using Red.Core.Logs;
 using Red.Core.Office;
 using WpfToolset;
@@ -12,51 +16,11 @@ using WpfToolset;
 namespace ExcelToWord
 {
     using ExcelRange = Microsoft.Office.Interop.Excel.Range;
+    using WordRange = Microsoft.Office.Interop.Word.Range;
 
     public class Script
     {
         public static Log Log { get; } = new Log("Script");
-
-        private struct Point2
-        {
-            public int X, Y;
-
-            public Point2(int x, int y) { X = x; Y = y; }
-
-            public override bool Equals(object obj)
-            {
-                if (obj is Point2 other) return other.X == X && other.Y == Y;
-                else return false;
-            }
-
-            public override int GetHashCode()
-            {
-                // Apparently this works, no idea why.
-                return X.GetHashCode() + 31 * Y.GetHashCode() + 16337;
-            }
-        }
-
-        private static float lastProgress = 0;
-
-        private static void ResetProgress()
-        {
-            lastProgress = 0;
-        }
-
-        private static void PrintProgress(float value)
-        {
-            if (value - lastProgress >= 0.1)
-            {
-                lastProgress = value;
-                Log.Debug($"{Math.Round(value * 100)}% complete");
-            }
-        }
-
-        private static void CompleteProgress()
-        {
-            if (lastProgress != 1)
-                Log.Debug($"100% complete");
-        }
 
         public static void Execute(OfficeApps apps, Input input)
         {
@@ -65,99 +29,194 @@ namespace ExcelToWord
 
             Log.Info("Executing Script");
 
-            Log.Debug("Target: " + input.Workbook.FullName);
             Log.Debug("Template: " + input.Template.Name);
 
-            Log.Debug("Checking which cells are numerical:");
-            Log.PushIndent();
+            string outputName = Path.GetFileNameWithoutExtension(input.Template.Name);
+            string outputExtension;
+            WdSaveFormat outputFormat;
 
-            var fullEnumerator = new RangeEnumerator(input.Template.UsedRange);
-            bool[,] mask = new bool[fullEnumerator.Height, fullEnumerator.Width];
-
-            ResetProgress();
-
-            while (fullEnumerator.MoveNext())
+            switch (input.OutputFormat)
             {
-                PrintProgress(fullEnumerator.Progress);
-
-                ExcelRange cell = fullEnumerator.Current;
-
-                if (Flow.Interrupted)
+                case OutputFormat.Word:
+                    outputExtension = "docx";
+                    outputFormat = WdSaveFormat.wdFormatDocument;
                     break;
 
-                bool numeric = ExcelHelper.IsCellAnywhereNumeric(apps, cell.Row, cell.Column);
-                mask[fullEnumerator.RowIndex, fullEnumerator.ColumnIndex] = numeric;
+                case OutputFormat.PDF:
+                    outputExtension = "pdf";
+                    outputFormat = WdSaveFormat.wdFormatPDF;
+                    break;
+
+                default:
+                    
+                    string name = Enum.GetName(typeof(OutputFormat), input.OutputFormat);
+                    Log.Warning($"Unrecognized output format {name}");
+                    Log.Debug("Defaulting to PDF");
+
+                    outputExtension = "pdf";
+                    outputFormat = WdSaveFormat.wdFormatPDF;
+                    break;
             }
 
-            CompleteProgress();
-            fullEnumerator.Dispose();
 
+
+            if (input.Sources.Count == 0)
+            {
+                Log.Warning("No sources found. Aborting.");
+                return;
+            }
+
+            Log.Debug("Sources:");
+            Log.PushIndent();
+            foreach (Input.Source source in input.Sources)
+            {
+                Log.Debug($"{source.Alias} - {source.Workbook.Name} ({source.Workbook.Path})");
+
+                if (Flow.Interrupted)
+                    return;
+            }
+            Log.PopIndent();
+
+            if (input.SheetNames.Count == 0)
+            {
+                Log.Warning("No sheet names found. Aborting");
+                return;
+            }
+
+            Log.Debug("Sheet Names:");
+            Log.PushIndent();
+            foreach (string name in input.SheetNames)
+            {
+                Log.Debug(name);
+
+                if (Flow.Interrupted)
+                    return;
+            }
             Log.PopIndent();
 
             if (Flow.Interrupted)
                 return;
 
-            Log.Debug("Creating summary sheets:");
-            
-            // Strange to double these I know, but it makes it easier to keep track of 
-            // indents with interruptions this way.
-            Log.PushIndent();
-            Log.PushIndent();
+            FileHelper.SaveTemporarily(input.Template);
 
-            foreach (string formula in input.Formulae)
+            Log.Info($"Reading template");
+
+            List<ICommand> commands = CollectCommands(input.Template);
+
+            if (!commands.Any())
             {
-                string name = ExcelHelper.CreateUniqueWorksheetName(input.Workbook, formula);
+                Log.Warning($"No commands found. Aborting.");
+                return;
+            }
 
-                Log.PopIndent();
-                Log.Debug($"Creating sheet \"{name}\":");
-                Log.PushIndent();
+            else Log.Debug($"{commands.Count()} found");
 
-                if (Flow.Interrupted)
-                    break;
+            CommandContext context = new CommandContext();
+            foreach (Input.Source source in input.Sources)
+            {
+                context.BooksByAlias.Add(source.Alias, source.Workbook);
+                context.BooksByName.Add(source.Workbook.Name, source.Workbook);
+            }
 
-                input.Template.Copy(After: input.Workbook.Sheets[apps.Excel.Sheets.Count]);
+            Log.Debug("Checking commands");
+            List<ICommand> checkedCommands = commands
+                .Where(x => x.Check(context))
+                .ToList();
 
-                if (Flow.Interrupted)
-                    break;
+            if (!checkedCommands.Any())
+            {
+                Log.Warning($"No commands passed check. Aborting.");
+                return;
+            }
 
-                Worksheet newSheet = (Worksheet) input.Workbook.ActiveSheet;
-                newSheet.Name = name;
+            Log.Debug($"Applying template to:");
+            Log.PushIndent();
 
-                var maskedEnumerator = new RangeEnumerator(newSheet.UsedRange);
-                maskedEnumerator.ApplyMask(mask);
-                ResetProgress();
+            if (Flow.Interrupted)
+                return;
 
-                while (maskedEnumerator.MoveNext())
+            foreach (string sheetName in input.SheetNames)
+            {
+                context.Name = sheetName;
+                Log.Debug(sheetName);
+
+                foreach (var command in checkedCommands)
                 {
-                    PrintProgress(maskedEnumerator.Progress);
-
-                    ExcelRange cell = maskedEnumerator.Current;
+                    command.Apply(context);
 
                     if (Flow.Interrupted)
                         break;
-
-                    string range = $"'{input.SheetReference}'!{cell.Address}";
-                    string formulaText = $"={formula}({range})";
-
-                    cell.Value = formulaText;
                 }
-
-                CompleteProgress();
-                maskedEnumerator.Dispose();
 
                 if (Flow.Interrupted)
                     break;
+
+                string parent = Path.GetFullPath("Output");
+                Directory.CreateDirectory(parent);
+
+                string fileName = PathHelper.CreateValidFilename($"{outputName} - {sheetName}.{outputExtension}");
+                string filePath = Path.Combine(parent, PathHelper.GetUniqueFileName(fileName));
+
+                input.Template.SaveAs2(filePath, outputFormat);
             }
 
-            Log.PopIndent();
             Log.PopIndent();
 
             if (Flow.Interrupted)
                 return;
 
-            Log.Debug($"Saving {input.Workbook.FullName}");
-            input.Workbook.Save();
+            // This is saving to the temporary file, not overwriting anything.
+            input.Template.Save();
+
             Log.Success("Script complete");
+        }
+
+        private static List<ICommand> CollectCommands(Document template)
+        {
+            template.Activate();
+
+            WordRange searchRange = template.Range();
+            searchRange.Find.Text = "#<*>#";
+            searchRange.Find.MatchWildcards = true;
+            searchRange.Find.MatchWholeWord = true;
+
+            var results = new List<ICommand>();
+
+            while (searchRange.Find.Execute())
+            {
+                var command = CreateCommand(searchRange.Duplicate);
+
+                if (command != null)
+                    results.Add(command);
+            }
+
+            return results;
+        }
+
+        private static ICommand CreateCommand(WordRange commandRange)
+        {
+            string sheetnamePattern = "#[Ss][Hh][Ee][Ee][Tt][Nn][Aa][Mm][Ee]#";
+            string directReferencePattern = @"#(([^-]+)-)?([^#]+)#";
+
+            Match match;
+
+            match = Regex.Match(commandRange.Text, sheetnamePattern);
+            if (match.Success)
+                return new SheetNameReference(commandRange);
+
+            match = Regex.Match(commandRange.Text, directReferencePattern);
+            if (match.Success)
+            {
+                string bookID = match.Groups[2].Value;
+                string cellReference = match.Groups[3].Value;
+
+                if (string.IsNullOrWhiteSpace(bookID))
+                    bookID = null;
+
+                return new DirectReference(bookID, commandRange, cellReference);
+            }
+
+            return null;
         }
     }
 }
