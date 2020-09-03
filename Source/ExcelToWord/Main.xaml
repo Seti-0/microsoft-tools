@@ -49,7 +49,7 @@
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
                 <DockPanel>
                     <Button Content="Browse" x:Name="SelectFile" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFile_Click"/>
-                    <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="229.873333333333"/>
+                    <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="Auto"/>
                 </DockPanel>
             </StackPanel>
             <!-- Other fields (along bottom) -->
@@ -57,7 +57,7 @@
                 <!-- Select sheet names -->
                 <DockPanel>
                     <Button Content="Select Names" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectSheets_Click"/>
-                    <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="196.48"/>
+                    <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="Auto"/>
                 </DockPanel>
                 <!-- Select Save As -->
                 <DockPanel LastChildFill="True" Margin="10,5,10,5">
@@ -69,16 +69,12 @@
                 </DockPanel>
                 <!-- "Run" and "Cancel" buttons -->
                 <DockPanel LastChildFill="False">
-                    <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click">
-                        <Button.Background>
-                            <ImageBrush/>
-                        </Button.Background>
-                    </Button>
+                    <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click"/>
                     <Button x:Name="Cancel" Content="Cancel" Width="100" Margin="5,5,5,10" Padding="10,10,10,10" Click="Cancel_Click"/>
                 </DockPanel>
             </StackPanel>
             <!-- Center list of sources -->
-            <DockPanel LastChildFill="True" Margin="10,5,10,5" Width="330">
+            <DockPanel LastChildFill="True" Margin="10,5,10,5">
                 <!-- List controls -->
                 <UniformGrid DockPanel.Dock="Bottom" Rows="1">
                     <Button Content="Add" x:Name="AddSource" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="AddSource_Click" />
