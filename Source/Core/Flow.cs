@@ -54,16 +54,14 @@ namespace Red.Core
                 Log.Core.Error($"Internal Error: Cannot start action: \"{name}\"");
                 Log.Core.PushIndent();
 
-                string statusMessage;
-
-                switch (CurrentState)
+                string statusMessage = CurrentState switch
                 {
-                    case State.Initializing: statusMessage = "App has not finished initializing"; break;
-                    case State.Running: statusMessage = $"Previous action: \"{CurrentActionName}\" has not ended"; break;
-                    case State.Interrupted: statusMessage = $"Previous action: \"{CurrentActionName}\" is interrupted, but has not ended"; break;
-                    default: statusMessage = "(Unrecognised internal state)"; break;
-                }
-
+                    State.Initializing => "App has not finished initializing",
+                    State.Running => $"Previous action: \"{CurrentActionName}\" has not ended",
+                    State.Interrupted => $"Previous action: \"{CurrentActionName}\" is interrupted, but has not ended",
+                    _ => "(Unrecognised internal state)",
+                };
+                
                 Log.Core.Debug(statusMessage);
                 Log.Core.Debug("Note to self: See \"Flow.cs\" for further info");
                 Log.Core.PopIndent();

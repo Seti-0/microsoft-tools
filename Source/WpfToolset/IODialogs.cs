@@ -22,6 +22,12 @@ namespace WpfToolset
 
     public class IODialogs
     {
+        /* To check filepaths after dialogs by using office interop is a nice idea, 
+         * but far too slow to be feasible.
+         * 
+         * This could change if office is kept open for the length of the program,
+         * but that brings its own pitfalls
+         * 
         public static FileCheck ExcelCheck = new FileCheck
         {
             Predicate = ExcelPredicate,
@@ -63,6 +69,7 @@ namespace WpfToolset
 
             return result;
         }
+         */
 
         public static bool TrySelectFile(out string filePath, string title, string defaultExt)
         {
@@ -93,18 +100,24 @@ namespace WpfToolset
         }
 
         public static bool TrySelectFile(TextBox textBox, Button browseButton, 
-            string title, string defaultExt, FileCheck check = null)
+            string title, string defaultExt)
         {
             browseButton.IsEnabled = false;
 
             if (TrySelectFile(out string path, title, defaultExt))
             {
-                WindowHelper.RunWithCancel("File type check", UpdateOnCheck, "Cancelled filetype check");
+                browseButton.Dispatcher.Invoke(UpdateButton);
+                textBox.Dispatcher.Invoke(UpdateText);
                 return true;
             }
 
             else return false;
 
+            /* The way Flow.cs is currently set up this causes threading issues.
+             * 
+             * More importantly, the process of opening office and closing
+             * it fully is far to slow to be acceptable for a single check.
+             * 
             void UpdateOnCheck()
             {
                 bool passed = check == null || check.Predicate(path);
@@ -126,6 +139,7 @@ namespace WpfToolset
                     }    
                 }
             }
+             */
 
             void UpdateText()
             {

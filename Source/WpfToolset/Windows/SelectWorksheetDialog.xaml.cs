@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Controls;
 using Red.Core;
 
 namespace WpfToolset
@@ -100,10 +101,22 @@ namespace WpfToolset
 
         public void SelectAll()
         {
-            List.SelectedItems.Clear();
+            switch (List.SelectionMode)
+            {
+                case SelectionMode.Single:
+                    List.SelectedIndex = 0;
+                    break;
 
-            foreach (var item in List.Items)
-                List.SelectedItems.Add(item);
+                case SelectionMode.Extended:
+                case SelectionMode.Multiple:
+
+                    List.SelectedItems.Clear();
+
+                    foreach (var item in List.Items)
+                        List.SelectedItems.Add(item);
+
+                    break;
+            }
         }
 
         public void SetSelectedRange(int a, int b)
@@ -177,7 +190,7 @@ namespace WpfToolset
 
         private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            List.SelectAll();
+            SelectAll();
         }
     }
 }
