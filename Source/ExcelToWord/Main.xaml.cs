@@ -62,7 +62,7 @@ namespace ExcelToWord
 
                     userInput.AddSource(new UserInputSource()
                     {
-                        Alias = userInput.ExcelSources.Count.ToString(),
+                        Alias = (userInput.ExcelSources.Count + 1).ToString(),
                         Name = bookName,
                         Path = path
                     });
