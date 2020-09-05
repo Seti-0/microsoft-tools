@@ -47,7 +47,7 @@
         <DockPanel MinWidth="300">
             <!-- Select word template (at top) -->
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
-                <DockPanel>
+                <DockPanel MaxWidth="400">
                     <Button Content="Browse" x:Name="SelectFile" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFile_Click"/>
                     <TextBox x:Name="DocumentPath" Text="Template Document Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="Auto"/>
                 </DockPanel>
@@ -55,7 +55,7 @@
             <!-- Other fields (along bottom) -->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical">
                 <!-- Select sheet names -->
-                <DockPanel>
+                <DockPanel MaxWidth="400">
                     <Button Content="Select Names" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectSheets_Click"/>
                     <TextBox x:Name="SheetNames" Text="SheetNames" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="Auto"/>
                 </DockPanel>
@@ -83,7 +83,7 @@
                     <Button Content="Move Down" x:Name="MoveSourceDown" Margin="0,0,0,0" Padding="5,1,5,1" Width="Auto" Height="Auto" HorizontalContentAlignment="Center" Click="MoveSourceDown_Click" />
                 </UniformGrid>
                 <!-- The actual list object -->
-                <ListView x:Name="ExcelSources" SelectionMode="Single">
+                <ListView x:Name="ExcelSources" SelectionMode="Single" MaxWidth="400">
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>

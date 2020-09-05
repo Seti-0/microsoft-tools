@@ -17,15 +17,15 @@
     <DockPanel>
         <DockPanel MinWidth="300">
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
-                <DockPanel>
+                <DockPanel MaxWidth="350">
                     <Button Content="Browse" x:Name="SelectFile" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFile_Click"/>
                     <TextBox x:Name="WorkbookPath" Text="Workbook Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1"/>
                 </DockPanel>
-                <DockPanel>
+                <DockPanel MaxWidth="350">
                     <Button Content="Select Template" x:Name="SelectWorksheet" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectWorksheet_Click"/>
                     <TextBox x:Name="TemplateName" Text="Template Name      " TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5"/>
                 </DockPanel>
-                <DockPanel>
+                <DockPanel MaxWidth="350">
                     <Button Content="Select Range" x:Name="SelectRange" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectRange_Click"/>
                     <TextBox x:Name="SheetRange" Text="Source Range" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5"/>
                 </DockPanel>
@@ -42,7 +42,7 @@
             </DockPanel>
             <TextBox x:Name="Formulae" TextWrapping="Wrap" AcceptsReturn="True" Padding="4,0,0,0" Margin="10,5,10,5" Background="White"/>
         </DockPanel>
-        <RichTextBox x:Name="LogBox" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" MinWidth="0" IsReadOnly="True" Background="Black" VerticalScrollBarVisibility="Auto">
+        <RichTextBox x:Name="LogBox" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" MinWidth="500" IsReadOnly="True" Background="Black" VerticalScrollBarVisibility="Auto">
             <FlowDocument>
                 <Paragraph/>
             </FlowDocument>
