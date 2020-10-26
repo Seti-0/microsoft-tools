@@ -12,6 +12,9 @@ using Red.Core.Logs;
 using Red.Core.Office;
 
 using WpfToolset;
+using System.Net.Http.Headers;
+using System.Windows.Controls.Ribbon;
+using System.Windows;
 
 namespace Tabulate
 {
@@ -66,16 +69,19 @@ namespace Tabulate
                 Log.Debug("Reading template: " + template.Name);
                 Log.PushIndent();
 
-                int rowCount = template.UsedRange.Rows.Count;
+                ExcelRange bottomRight = (ExcelRange) template.UsedRange.Cells[template.UsedRange.Cells.Count];
+                int endRow = bottomRight.Row;
+                int rowCount = endRow;
+
                 string[] references = new string[rowCount];
                 int referenceCount = 0;
 
-                for (int i = 0; i < rowCount; i++)
+                for (int i = 1; i < rowCount; i++)
                 {
                     if (Flow.Interrupted)
                         break;
 
-                    ExcelRange cell = (ExcelRange) template.UsedRange.Cells[1+i, 2];
+                    ExcelRange cell = (ExcelRange) template.Cells[1+i, 2];
                     string reference = cell?.Text?.ToString();
                     reference = reference?.Trim();
 
@@ -132,6 +138,15 @@ namespace Tabulate
                         // on the third sheet column
                         ExcelRange targetCell = (ExcelRange) template.Cells[j + 1, i + 3];
                         targetCell.Value = formula;
+
+                        if (Flow.Interrupted)
+                            break;
+
+                        // Use the formula to retrieve the value, then replace
+                        // the formula with that value.
+                        // This is a little less fiddly than retrieving the value
+                        // directly from the other sheet. (It also requires less interop calls I think)
+                        targetCell.Value = targetCell.Value2;
                     }
 
                     if (Flow.Interrupted)
