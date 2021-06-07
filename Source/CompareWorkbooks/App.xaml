@@ -1,0 +1,9 @@
+﻿<Application x:Class="CompareWorkbooks.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:CompareWorkbooks"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <SolidColorBrush x:Key="MainBackground" Color="#FFE0E0D5"/>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,48 @@
+﻿<Window x:Class="CompareWorkbooks.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CompareWorkbooks"
+        mc:Ignorable="d"
+        
+        Title="SimpleDB" Height="300" Width="900" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style TargetType="{x:Type Paragraph}">
+            <Setter Property="Margin"
+                    Value="0" />
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <DockPanel MinWidth="300" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
+                <DockPanel>
+                    <Button Content="Browse" x:Name="SelectFileA" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFileA_Click"/>
+                    <TextBox x:Name="WorkbookPathA" Text="Workbook Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="173.526666666667"/>
+                </DockPanel>
+                <DockPanel>
+                    <Button Content="Browse" x:Name="SelectFileB" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectFileB_Click"/>
+                    <TextBox x:Name="WorkbookPathB" Text="Workbook Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5,0,5" MaxLines="1" Width="173.526666666667"/>
+                </DockPanel>
+                <DockPanel>
+                    <Button Content="Select Template" x:Name="SelectWorksheet" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectWorksheet_Click"/>
+                    <TextBox x:Name="TemplateName" Text="Template Name" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="121.336666666667"/>
+                </DockPanel>
+                <DockPanel>
+                    <Button Content="Source Sheets" x:Name="SelectSheets" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectRange_Click"/>
+                    <TextBox x:Name="SelectedSheets" Text="Source Range" TextWrapping="Wrap" DockPanel.Dock="Top" Margin="10,5,0,5" Width="131.266666666667"/>
+                </DockPanel>
+            </StackPanel>
+            <DockPanel LastChildFill="False" DockPanel.Dock="Top">
+                <Button x:Name="Run" Content="Run" Width="100" Margin="10,5,5,10" Padding="10,10,10,10" Click="Run_Click">
+                </Button>
+                <Button x:Name="Cancel" Content="Cancel" Width="100" Margin="5,5,5,10" Padding="10,10,10,10" Click="Cancel_Click"/>
+            </DockPanel>
+        </DockPanel>
+        <RichTextBox x:Name="LogBox" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" MinWidth="0" IsReadOnly="True" Background="Black" VerticalScrollBarVisibility="Auto">
+            <FlowDocument>
+                <Paragraph/>
+            </FlowDocument>
+        </RichTextBox>
+    </DockPanel>
+</Window>

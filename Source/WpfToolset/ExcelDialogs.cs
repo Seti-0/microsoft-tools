@@ -13,6 +13,16 @@ namespace WpfToolset
     using Workbook = Microsoft.Office.Interop.Excel.Workbook;
     using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
+    public enum SheetSelectionType
+    {
+        List, Range
+    }
+
+    public enum SheetSelectionDefault
+    {
+        Shared, Unique
+    }
+
     public static class ExcelDialogs
     {
         private class SharedWorksheet
@@ -166,13 +176,15 @@ namespace WpfToolset
 
         }
 
-        public static bool SelectSharedWorksheets(TextBox textBox)
+        public static bool SelectSharedWorksheets(TextBox textBox, 
+            SheetSelectionType selectionType = SheetSelectionType.List,
+            SheetSelectionDefault selectionDefault = SheetSelectionDefault.Shared)
         {
             if (sharedWorksheets != null)
             {
-                var worksheetDialog = new SelectWorksheetDialog(null, SelectionMode.Multiple);
+                SelectWorksheetDialog worksheetDialog = new SelectWorksheetDialog(null, SelectionMode.Multiple);
 
-                var list = new List<SelectWorksheetDialog.Item>();
+                List<SelectWorksheetDialog.Item> list = new List<SelectWorksheetDialog.Item>();
                 foreach (var item in sharedWorksheets)
                 {
                     string name = item.SharedName;
@@ -180,17 +192,32 @@ namespace WpfToolset
                     if (!item.IsCommon)
                         name += $" ({item.SourceWorksheet})";
 
-                    list.Add(new SelectWorksheetDialog.Item { Content = name, Primary = item.IsCommon });
+                    list.Add(new SelectWorksheetDialog.Item { 
+                        UserData = item.SharedName,
+                        Content = name, 
+                        Primary = item.IsCommon == (selectionDefault == SheetSelectionDefault.Shared) 
+                    });
                 }
 
                 worksheetDialog.Items = list;
-                worksheetDialog.SelectAll();
+                worksheetDialog.SelectAll(primaryOnly: true);
 
                 bool? success = worksheetDialog.ShowDialog();
 
                 if (success.HasValue && success.Value && worksheetDialog.Results != null)
                 {
-                    string result = string.Join(',', worksheetDialog.Results);
+                    string result;
+                    if (selectionType == SheetSelectionType.Range)
+                    {
+                        result = worksheetDialog.Results.First();
+
+                        if (worksheetDialog.Results.Count > 1)
+                            result += ":" + worksheetDialog.Results.Last();
+                    }
+                    else
+                    {
+                        result = string.Join(',', worksheetDialog.Results);
+                    }
 
                     textBox.Text = result;
                     textBox.ScrollToEnd();

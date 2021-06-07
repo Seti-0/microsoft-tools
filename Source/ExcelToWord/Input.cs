@@ -186,9 +186,6 @@ namespace ExcelToWord
 
             else
             {
-                //Script.Log.Warning("Note: the document must be available to write to");
-                //Script.Log.Debug("This means that it cannot be already open for editing in Word, for example");
-
                 // FileHelper will log the actual error
                 return false;
             }

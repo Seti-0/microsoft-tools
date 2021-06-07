@@ -104,14 +104,12 @@ namespace WpfToolset
         {
             browseButton.IsEnabled = false;
 
-            if (TrySelectFile(out string path, title, defaultExt))
-            {
-                browseButton.Dispatcher.Invoke(UpdateButton);
+            bool success = TrySelectFile(out string path, title, defaultExt);
+            if (success)
                 textBox.Dispatcher.Invoke(UpdateText);
-                return true;
-            }
 
-            else return false;
+            browseButton.Dispatcher.Invoke(UpdateButton);
+            return success;
 
             /* The way Flow.cs is currently set up this causes threading issues.
              * 

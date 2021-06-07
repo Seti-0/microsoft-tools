@@ -173,8 +173,8 @@ namespace Red.Core.Office
 
             string[] elements = reference.Split(':');
 
-            int start = 0;
-            int end = 0;
+            int start;
+            int end;
 
             if (elements.Length == 1)
             {
