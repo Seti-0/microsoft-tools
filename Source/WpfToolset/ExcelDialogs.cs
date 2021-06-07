@@ -36,6 +36,8 @@ namespace WpfToolset
 
         private static IEnumerable<string> worksheetNames;
 
+        public static bool SheetRangeDialogAvailable => worksheetNames != null && worksheetNames.Any();
+
         public static void CheckCommonWorksheets(IEnumerable<string> workbookPaths)
         {
             if (workbookPaths.Count() < 2)
@@ -121,19 +123,20 @@ namespace WpfToolset
 
         public static void UpdateWorksheetRangeSelector(Button button, TextBox text)
         {
-            bool success = worksheetNames != null && worksheetNames.Any();
+            if (button != null)
+            {
+                button.Dispatcher.Invoke(
+                    () => button.IsEnabled = SheetRangeDialogAvailable);
+            }
 
-            button.Dispatcher.Invoke(
-                () => button.IsEnabled = success);
-
-            if (success)
+            if (text != null && SheetRangeDialogAvailable)
             {
                 // This is silly and convoluted I know. 
                 // I just want the first, second and last elements
 
                 var enumerator = worksheetNames.GetEnumerator();
                 enumerator.MoveNext();
-                
+
                 string first = enumerator.Current;
                 string second = null;
                 string last = first;
@@ -147,12 +150,11 @@ namespace WpfToolset
                         last = enumerator.Current;
                 }
 
-
                 string range = $"{second ?? first}:{last}";
 
                 text.Dispatcher.Invoke(
                     () => text.Text = range);
-            }
+            }    
         }
 
         private static void UnsafeCheckSheets(OfficeApps apps, string workbookPath)
@@ -240,6 +242,27 @@ namespace WpfToolset
                 if (success.HasValue && success.Value && worksheetDialog.Result != null)
                 {
                     textBox.Text = worksheetDialog.Result;
+                    textBox.ScrollToEnd();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool SelectWorksheets(TextBox textBox, string workbookPath)
+        {
+            if (worksheetNames != null)
+            {
+                var worksheetDialog = new SelectWorksheetDialog(workbookPath, SelectionMode.Extended);
+
+                worksheetDialog.ItemContent = worksheetNames;
+
+                bool? success = worksheetDialog.ShowDialog();
+
+                if (success.HasValue && success.Value && worksheetDialog.Results != null)
+                {
+                    textBox.Text = string.Join(',', worksheetDialog.Results);
                     textBox.ScrollToEnd();
                     return true;
                 }
