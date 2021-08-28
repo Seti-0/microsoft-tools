@@ -163,6 +163,55 @@ namespace Red.Core.Office
             else return false;
         }
 
+        public static bool TryParseCommonWorksheetRange(
+            out IList<string> worksheetNames, IList<Workbook> workbooks, string reference)
+        {
+            FindCommonWorksheetNames(out List<string> commonNames, out _, workbooks);
+
+            string[] elements = reference.Split(":");
+
+            int start, end;
+            if (elements.Length == 1)
+            {
+                start = end = commonNames.IndexOf(elements[0]);
+            }
+            else if (elements.Length == 2)
+            {
+                start = commonNames.IndexOf(elements[0]);
+                end = commonNames.IndexOf(elements[1]);
+            }
+            else
+            {
+                worksheetNames = null;
+                return false;
+            }
+
+            if (start == -1 || end == -1)
+            {
+                worksheetNames = null;
+                return false;
+            }
+
+            if (end < start)
+            {
+                int save = end;
+                end = start;
+                start = save;
+            }
+
+            // Make the end exclusive rather than inclusive.
+            end++;
+
+            worksheetNames = new string[end - start];
+            for (int i = 0; i < worksheetNames.Count; i++)
+            {
+                worksheetNames[i] = commonNames[start + i];
+            }
+
+            return true;
+            
+        }
+
         public static bool TryParseWorksheetRange(out IEnumerable<Worksheet> worksheets, Workbook workbook,
                     string reference, bool compareWords = false, bool verbrose = false)
         {

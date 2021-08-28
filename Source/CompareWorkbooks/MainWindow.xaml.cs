@@ -80,7 +80,7 @@ namespace CompareWorkbooks
             userInput.FilePathA = WorkbookPathA.Text;
             userInput.FilePathB = WorkbookPathB.Text;
             userInput.TemplateName = TemplateName.Text;
-            userInput.SheetReference = SelectedSheets.Text;
+            userInput.SourceSheetReference = SelectedSheets.Text;
         }
 
         private void CheckWorksheets()

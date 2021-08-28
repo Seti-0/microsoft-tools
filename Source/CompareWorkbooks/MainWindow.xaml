@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:CompareWorkbooks"
         mc:Ignorable="d"
         
-        Title="SimpleDB" Height="300" Width="900" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen">
+        Title="Compare Workbooks" Height="300" Width="900" Background="{DynamicResource MainBackground}" WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <Style TargetType="{x:Type Paragraph}">
             <Setter Property="Margin"
@@ -18,11 +18,11 @@
             <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
                 <DockPanel>
                     <Button Content="Browse" x:Name="SelectFileA" DockPanel.Dock="Right" Margin="0,10,10,5" Padding="30,1,30,1" Click="SelectFileA_Click"/>
-                    <TextBox x:Name="WorkbookPathA" Text="Workbook Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="173.526666666667"/>
+                    <TextBox x:Name="WorkbookPathA" Text="Workbook Path A" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,10,0,5" MaxLines="1" Width="173.526666666667"/>
                 </DockPanel>
                 <DockPanel>
                     <Button Content="Browse" x:Name="SelectFileB" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectFileB_Click"/>
-                    <TextBox x:Name="WorkbookPathB" Text="Workbook Path" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5,0,5" MaxLines="1" Width="173.526666666667"/>
+                    <TextBox x:Name="WorkbookPathB" Text="Workbook Path B" TextWrapping="NoWrap" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="10,5,0,5" MaxLines="1" Width="173.526666666667"/>
                 </DockPanel>
                 <DockPanel>
                     <Button Content="Select Template" x:Name="SelectWorksheet" DockPanel.Dock="Right" Margin="0,5,10,5" Padding="30,1,30,1" Click="SelectWorksheet_Click"/>

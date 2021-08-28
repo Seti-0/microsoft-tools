@@ -14,15 +14,13 @@ namespace CompareWorkbooks
 {
     public class Input
     {
-
-
         public Workbook TargetWorkbook;
 
         public Workbook OtherWorkbook;
 
         public Worksheet Template;
 
-        public string SourceSheetRange;
+        public IList<string> Sources;
     }
 
     public class UserInput
@@ -33,7 +31,7 @@ namespace CompareWorkbooks
 
         public string TemplateName { get; set; } = null;
 
-        public string SheetReference { get; set; } = null;
+        public string SourceSheetReference { get; set; } = null;
 
         public bool TryParse(OfficeApps apps, bool readOnly, out Input input)
         {
@@ -42,7 +40,7 @@ namespace CompareWorkbooks
             if (Flow.Interrupted)
                 return false;
 
-            if (FilePathA == null || FilePathB == null || TemplateName == null || SheetReference == null)
+            if (FilePathA == null || FilePathB == null || TemplateName == null || SourceSheetReference == null)
             {
                 Script.Log.Error("Unable to parse user input - one or more fields were null");
                 return false;
@@ -84,11 +82,16 @@ namespace CompareWorkbooks
             if (Flow.Interrupted)
                 return false;
 
-            input.SourceSheetRange = SheetReference;
-
-            if (string.IsNullOrWhiteSpace(input.SourceSheetRange))
+            if (string.IsNullOrWhiteSpace(SourceSheetReference))
             {
-                Script.Log.Warning($"No source sheets given");
+                Script.Log.Warning($"No source sheets given.");
+                return false;
+            }
+
+            IList<Workbook> workbooks = new Workbook[] { input.TargetWorkbook, input.OtherWorkbook };
+            if (!ExcelHelper.TryParseCommonWorksheetRange(out input.Sources, workbooks, SourceSheetReference))
+            {
+                Script.Log.Warning("Unable to read reference: '" + SourceSheetReference + "'.");
                 return false;
             }
 
